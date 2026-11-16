@@ -1,0 +1,746 @@
+{
+ "comment": "Hand-written breakages for tools/mutate.py. Each patch must match its file EXACTLY ONCE. expect='caught' means the test suite must fail; 'equivalent' means the mutant is behaviourally identical so surviving is expected.",
+ "mutations": [
+  {
+   "id": "I1",
+   "group": "indicators",
+   "description": "rolling window keeps n+1 elements (expiry off by one)",
+   "file": "include/bt/indicators.hpp",
+   "old": "if (dq_.front().first + n_ <= index_) dq_.pop_front();",
+   "new": "if (dq_.front().first + n_ < index_) dq_.pop_front();",
+   "expect": "caught"
+  },
+  {
+   "id": "I2",
+   "group": "indicators",
+   "description": "RSI Wilder smoothing uses n instead of n-1",
+   "file": "src/indicators.cpp",
+   "old": "avg_gain_ = (avg_gain_ * (n - 1.0) + gain) / n;",
+   "new": "avg_gain_ = (avg_gain_ * n + gain) / n;",
+   "expect": "caught"
+  },
+  {
+   "id": "I3",
+   "group": "indicators",
+   "description": "ATR ignores |low - prev_close|",
+   "file": "src/indicators.cpp",
+   "old": "std::max({tr, std::fabs(high - prev_close_), std::fabs(low - prev_close_)})",
+   "new": "std::max({tr, std::fabs(high - prev_close_)})",
+   "expect": "caught"
+  },
+  {
+   "id": "I4",
+   "group": "indicators",
+   "description": "EMA seeded with the last input instead of the SMA",
+   "file": "src/indicators.cpp",
+   "old": "if (count_ == n_) ema_ = sum_ / static_cast<double>(n_);",
+   "new": "if (count_ == n_) ema_ = x;",
+   "expect": "caught"
+  },
+  {
+   "id": "I5",
+   "group": "indicators",
+   "description": "Bollinger uses the SAMPLE sd (n-1)",
+   "file": "src/indicators.cpp",
+   "old": "return std::sqrt(std::max(m2_, 0.0) / static_cast<double>(n_));",
+   "new": "return std::sqrt(std::max(m2_, 0.0) / static_cast<double>(n_ - 1));",
+   "expect": "caught"
+  },
+  {
+   "id": "I6",
+   "group": "indicators",
+   "description": "Bollinger periodic exact resync removed",
+   "file": "src/indicators.cpp",
+   "old": "if (count_ >= n_ && ++since_resync_ >= n_) {",
+   "new": "if (false) {",
+   "expect": "caught"
+  },
+  {
+   "id": "I7",
+   "group": "indicators",
+   "description": "RSI of a flat series is 100 instead of 50",
+   "file": "src/indicators.cpp",
+   "old": "return avg_gain_ == 0.0 ? 50.0 : 100.0;",
+   "new": "return avg_gain_ == 0.0 ? 100.0 : 100.0;",
+   "expect": "caught"
+  },
+  {
+   "id": "I8",
+   "group": "indicators",
+   "description": "SMA never drops the oldest value",
+   "file": "src/indicators.cpp",
+   "old": "sum_ += x - buf_[head_];  // newest in, oldest out",
+   "new": "sum_ += x;",
+   "expect": "caught"
+  },
+  {
+   "id": "S1",
+   "group": "strategies",
+   "description": "SMA: '>' becomes '>=' (equality counts as long)",
+   "file": "src/strategies.cpp",
+   "old": "if (fast_.value() > slow_.value()) {",
+   "new": "if (fast_.value() >= slow_.value()) {",
+   "expect": "caught"
+  },
+  {
+   "id": "S2",
+   "group": "strategies",
+   "description": "SMA warm-up checks fast instead of slow",
+   "file": "src/strategies.cpp",
+   "old": "if (!slow_.ready()) return;  // warm-up",
+   "new": "if (!fast_.ready()) return;  // warm-up",
+   "expect": "equivalent"
+  },
+  {
+   "id": "S3",
+   "group": "strategies",
+   "description": "RSI buy: '<' becomes '<='",
+   "file": "src/strategies.cpp",
+   "old": "if (pos == 0 && r < buy_below_) {",
+   "new": "if (pos == 0 && r <= buy_below_) {",
+   "expect": "caught"
+  },
+  {
+   "id": "S4",
+   "group": "strategies",
+   "description": "RSI sell: '>' becomes '>='",
+   "file": "src/strategies.cpp",
+   "old": "} else if (pos > 0 && r > sell_above_) {",
+   "new": "} else if (pos > 0 && r >= sell_above_) {",
+   "expect": "caught"
+  },
+  {
+   "id": "S5",
+   "group": "strategies",
+   "description": "Donchian entry: '>' becomes '>='",
+   "file": "src/strategies.cpp",
+   "old": "if (have_up && atr_.ready() && bar.close > up) {",
+   "new": "if (have_up && atr_.ready() && bar.close >= up) {",
+   "expect": "caught"
+  },
+  {
+   "id": "S6",
+   "group": "strategies",
+   "description": "Donchian reads the channel AFTER folding today's bar in",
+   "file": "src/strategies.cpp",
+   "old": "    const bool have_up = upper_.ready(), have_lo = lower_.ready();\n    const double up = upper_.value(), lo = lower_.value();\n    upper_.update(bar.high);\n    lower_.update(bar.low);\n    atr_.update(bar.high, bar.low, bar.close);\n",
+   "new": "    upper_.update(bar.high);\n    lower_.update(bar.low);\n    atr_.update(bar.high, bar.low, bar.close);\n    const bool have_up = upper_.ready(), have_lo = lower_.ready();\n    const double up = upper_.value(), lo = lower_.value();\n",
+   "expect": "caught"
+  },
+  {
+   "id": "S7",
+   "group": "strategies",
+   "description": "Donchian exit: '<' becomes '<='",
+   "file": "src/strategies.cpp",
+   "old": "} else if (have_lo && bar.close < lo) {",
+   "new": "} else if (have_lo && bar.close <= lo) {",
+   "expect": "caught"
+  },
+  {
+   "id": "S8",
+   "group": "strategies",
+   "description": "Donchian stop sign flipped (stop ABOVE the close)",
+   "file": "src/strategies.cpp",
+   "old": "const double stop = bar.close - atr_mult_ * atr_.value();",
+   "new": "const double stop = bar.close + atr_mult_ * atr_.value();",
+   "expect": "caught"
+  },
+  {
+   "id": "S9",
+   "group": "strategies",
+   "description": "Donchian no stop cleanup when flat",
+   "file": "src/strategies.cpp",
+   "old": "    if (pos <= 0) {\n      cancel_stops(c);\n      stop_p_ = 0;\n      return;\n    }",
+   "new": "    if (pos <= 0) {\n      stop_p_ = 0;\n      return;\n    }",
+   "expect": "caught"
+  },
+  {
+   "id": "S10",
+   "group": "strategies",
+   "description": "Donchian never resizes the stop to the position",
+   "file": "src/strategies.cpp",
+   "old": "if (!ok && o.price == stop_p_ && o.remaining == pos) ok = true;",
+   "new": "if (!ok && o.price == stop_p_) ok = true;",
+   "expect": "caught"
+  },
+  {
+   "id": "S11",
+   "group": "strategies",
+   "description": "Donchian exit forgets to cancel the stop",
+   "file": "src/strategies.cpp",
+   "old": "      cancel_stops(c);\n      c.sell(sym_, pos);",
+   "new": "      c.sell(sym_, pos);",
+   "expect": "caught"
+  },
+  {
+   "id": "S12",
+   "group": "strategies",
+   "description": "Momentum needs lookback-1 bars (off by one)",
+   "file": "src/strategies.cpp",
+   "old": "if (h.size() <= lookback_) continue;",
+   "new": "if (h.size() < lookback_) continue;",
+   "expect": "caught"
+  },
+  {
+   "id": "S13",
+   "group": "strategies",
+   "description": "Momentum requires the symbol to trade TODAY",
+   "file": "src/strategies.cpp",
+   "old": "if (c.date() - h.latest().date > max_stale_days_) continue;",
+   "new": "if (c.date() != h.latest().date) continue;",
+   "expect": "caught"
+  },
+  {
+   "id": "S14",
+   "group": "strategies",
+   "description": "Momentum churn guard removed",
+   "file": "src/strategies.cpp",
+   "old": "if (!always_ && selected == held) return;",
+   "new": "if (false) return;",
+   "expect": "caught"
+  },
+  {
+   "id": "S15",
+   "group": "strategies",
+   "description": "Momentum consumes the month even if nothing is rankable",
+   "file": "src/strategies.cpp",
+   "old": "    if (cands.empty()) return;  // nothing rankable: do NOT consume this month, try again tomorrow\n    last_ym_ = ym;",
+   "new": "    last_ym_ = ym;\n    if (cands.empty()) return;",
+   "expect": "caught"
+  },
+  {
+   "id": "S16",
+   "group": "strategies",
+   "description": "Momentum ranks ASCENDING (worst first)",
+   "file": "src/strategies.cpp",
+   "old": "if (a.ret != b.ret) return a.ret > b.ret;",
+   "new": "if (a.ret != b.ret) return a.ret < b.ret;",
+   "expect": "caught"
+  },
+  {
+   "id": "S17",
+   "group": "strategies",
+   "description": "BuyAndHold sizes with 100% of equity (ignores allocation)",
+   "file": "src/strategies.cpp",
+   "old": "return qty_for_amount(c.equity() * allocation_, price);",
+   "new": "return qty_for_amount(c.equity(), price);",
+   "expect": "caught"
+  },
+  {
+   "id": "L1",
+   "group": "engine",
+   "description": "HistoryView leaks ONE future bar (num_visible + 1)",
+   "file": "include/bt/calendar.hpp",
+   "old": "static_cast<std::size_t>(last_[s][t] + 1)",
+   "new": "static_cast<std::size_t>(last_[s][t] + 2)",
+   "expect": "caught"
+  },
+  {
+   "id": "A1",
+   "group": "analytics",
+   "description": "Sample sd divides by n instead of n-1",
+   "file": "src/analytics.cpp",
+   "old": "return std::sqrt(ss / static_cast<double>(v.size() - 1));",
+   "new": "return std::sqrt(ss / static_cast<double>(v.size()));",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A2",
+   "group": "analytics",
+   "description": "Volatility annualised by td instead of sqrt(td)",
+   "file": "src/analytics.cpp",
+   "old": "m.annualised_volatility = sd * std::sqrt(td);",
+   "new": "m.annualised_volatility = sd * td;",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A3",
+   "group": "analytics",
+   "description": "Sharpe adds the risk-free rate instead of subtracting it",
+   "file": "src/analytics.cpp",
+   "old": "const double mean_excess = mean - rf_d;",
+   "new": "const double mean_excess = mean + rf_d;",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A4",
+   "group": "analytics",
+   "description": "Sortino downside deviation uses n-1",
+   "file": "src/analytics.cpp",
+   "old": "const double dd_dev = std::sqrt(down2 / static_cast<double>(r.size()));",
+   "new": "const double dd_dev = std::sqrt(down2 / static_cast<double>(r.size() - 1));",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A5",
+   "group": "analytics",
+   "description": "Sortino target is 0 instead of the risk-free rate",
+   "file": "src/analytics.cpp",
+   "old": "const double e = std::min(x - rf_d, 0.0);",
+   "new": "const double e = std::min(x, 0.0);",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A6",
+   "group": "analytics",
+   "description": "CAGR year basis 365 instead of 365.25",
+   "file": "src/analytics.cpp",
+   "old": "constexpr double kCalendarDaysPerYear = 365.25;",
+   "new": "constexpr double kCalendarDaysPerYear = 365.0;",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A7",
+   "group": "analytics",
+   "description": "Drawdown peak updates on equality (plateau moves the peak date)",
+   "file": "src/analytics.cpp",
+   "old": "if (c[i].equity > peak) {",
+   "new": "if (c[i].equity >= peak) {",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A8",
+   "group": "analytics",
+   "description": "Drawdown recovery needs strictly above the old peak",
+   "file": "src/analytics.cpp",
+   "old": "c[j].equity >= c[dd_peak].equity",
+   "new": "c[j].equity > c[dd_peak].equity",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A9",
+   "group": "analytics",
+   "description": "Zero-P&L trade counted as a win",
+   "file": "src/analytics.cpp",
+   "old": "    if (p > 0) {\n      ++m.num_wins;",
+   "new": "    if (p >= 0) {\n      ++m.num_wins;",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A10",
+   "group": "analytics",
+   "description": "Profit factor inverted (losses / wins)",
+   "file": "src/analytics.cpp",
+   "old": "m.profit_factor = win_sum / std::fabs(loss_sum);",
+   "new": "m.profit_factor = std::fabs(loss_sum) / win_sum;",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A11",
+   "group": "analytics",
+   "description": "Beta covariance/variance use n while sd uses n-1",
+   "file": "src/analytics.cpp",
+   "old": "const double denom = static_cast<double>(rs.size() - 1);",
+   "new": "const double denom = static_cast<double>(rs.size());",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A12",
+   "group": "analytics",
+   "description": "Alpha ignores the risk-free rate",
+   "file": "src/analytics.cpp",
+   "old": "m.alpha_annual = ((ms - rf_d) - beta * (mb - rf_d)) * td;",
+   "new": "m.alpha_annual = (ms - beta * mb + 0.0 * rf_d) * td;",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A13",
+   "group": "analytics",
+   "description": "Benchmark pairing: one-day strategy return against a multi-day benchmark return",
+   "file": "src/analytics.cpp",
+   "old": "rs.push_back(ratio(curve[ci[k]].equity, curve[ci[k - 1]].equity) - 1.0);",
+   "new": "rs.push_back(ratio(curve[ci[k]].equity, curve[ci[k] - 1].equity) - 1.0);",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A14",
+   "group": "analytics",
+   "description": "Turnover is two-way (no division by 2)",
+   "file": "src/analytics.cpp",
+   "old": "m.turnover = static_cast<double>(m.traded_value_paise) / (2.0 * *m.average_equity_paise);",
+   "new": "m.turnover = static_cast<double>(m.traded_value_paise) / (*m.average_equity_paise);",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A15",
+   "group": "analytics",
+   "description": "Fees % uses net P&L instead of gross",
+   "file": "src/analytics.cpp",
+   "old": "static_cast<double>(m.total_fees_paise) / static_cast<double>(*m.gross_pnl_paise);",
+   "new": "static_cast<double>(m.total_fees_paise) / static_cast<double>(*m.net_pnl_paise);",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A16",
+   "group": "analytics",
+   "description": "Time in market divides by n-1",
+   "file": "src/analytics.cpp",
+   "old": "m.time_in_market = static_cast<double>(invested) / static_cast<double>(n);",
+   "new": "m.time_in_market = static_cast<double>(invested) / static_cast<double>(n - 1);",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A17",
+   "group": "analytics",
+   "description": "Best-day date is the earlier record of the pair",
+   "file": "src/analytics.cpp",
+   "old": "m.best_day_date = c[bi + 1].date;",
+   "new": "m.best_day_date = c[bi].date;",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A18",
+   "group": "analytics",
+   "description": "Exposure uses signed positions (shorts count negative)",
+   "file": "src/analytics.cpp",
+   "old": "exposure_sum += std::fabs(static_cast<double>(r.positions_value)) / static_cast<double>(r.equity);",
+   "new": "exposure_sum += static_cast<double>(r.positions_value) / static_cast<double>(r.equity);",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A19",
+   "group": "analytics",
+   "description": "Risk-free rate not converted to a daily rate",
+   "file": "src/analytics.cpp",
+   "old": "const double rf_d = cfg.risk_free_annual / td;\n    const double mean_excess",
+   "new": "const double rf_d = cfg.risk_free_annual;\n    const double mean_excess",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A20",
+   "group": "analytics",
+   "description": "Best day: ties go to the LAST occurrence",
+   "file": "src/analytics.cpp",
+   "old": "if (r[i] > r[bi]) bi = i;",
+   "new": "if (r[i] >= r[bi]) bi = i;",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A21",
+   "group": "analytics",
+   "description": "Max drawdown: ties go to the LAST occurrence",
+   "file": "src/analytics.cpp",
+   "old": "if (dd < max_dd) {  // strict: first occurrence of the minimum wins ties",
+   "new": "if (dd <= max_dd) {  // strict: first occurrence of the minimum wins ties",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "A22",
+   "group": "analytics",
+   "description": "Win rate denominator excludes break-even trades",
+   "file": "src/analytics.cpp",
+   "old": "m.win_rate = static_cast<double>(m.num_wins) / nt;",
+   "new": "m.win_rate = static_cast<double>(m.num_wins) / static_cast<double>(m.num_wins + m.num_losses);",
+   "expect": "caught",
+   "also_check": [
+    "python -I tools/ref_metrics.py build/diff"
+   ]
+  },
+  {
+   "id": "WU1",
+   "group": "phase5",
+   "description": "Warm-up boundary: the start date itself is treated as warm-up",
+   "file": "src/engine.cpp",
+   "old": "if (cfg_.eval_start && today < *cfg_.eval_start) {",
+   "new": "if (cfg_.eval_start && today <= *cfg_.eval_start) {",
+   "expect": "caught"
+  },
+  {
+   "id": "WU2",
+   "group": "phase5",
+   "description": "Warm-up orders are NOT discarded (they leak into the evaluation window)",
+   "file": "src/engine.cpp",
+   "old": "      res.warmup_orders_discarded += staged.size();\n      staged.clear();",
+   "new": "      res.warmup_orders_discarded += staged.size();",
+   "expect": "caught"
+  },
+  {
+   "id": "WU3",
+   "group": "phase5",
+   "description": "Order ids do not restart after warm-up",
+   "file": "src/engine.cpp",
+   "old": "      next_id = 1;  // order ids restart with the evaluation window\n",
+   "new": "\n",
+   "expect": "caught"
+  },
+  {
+   "id": "WU4",
+   "group": "phase5",
+   "description": "Momentum acts during warm-up (and uses up the month)",
+   "file": "src/strategies.cpp",
+   "old": "    if (c.in_warmup()) return;\n",
+   "new": "\n",
+   "expect": "caught"
+  },
+  {
+   "id": "WU5",
+   "group": "phase5",
+   "description": "Warm-up cancellations are recorded as events",
+   "file": "src/engine.cpp",
+   "old": "      ctx.events_ = &warmup_events;\n",
+   "new": "\n",
+   "expect": "caught"
+  },
+  {
+   "id": "SW1",
+   "group": "phase5",
+   "description": "Selection picks the LOWEST metric",
+   "file": "src/sweep.cpp",
+   "old": "if (!best || *v > best_v) {          // strict: ties keep the earliest (lowest id)",
+   "new": "if (!best || *v < best_v) {          // strict: ties keep the earliest (lowest id)",
+   "expect": "caught"
+  },
+  {
+   "id": "SW2",
+   "group": "phase5",
+   "description": "min_trades guard removed",
+   "file": "src/sweep.cpp",
+   "old": "    if (r.is->num_trades < min_trades) continue;\n",
+   "new": "    if (false && r.is->num_trades < min_trades) continue;\n",
+   "expect": "caught"
+  },
+  {
+   "id": "SW3",
+   "group": "phase5",
+   "description": "Selection ties go to the LAST id",
+   "file": "src/sweep.cpp",
+   "old": "if (!best || *v > best_v) {          // strict: ties keep the earliest (lowest id)",
+   "new": "if (!best || *v >= best_v) {          // strict: ties keep the earliest (lowest id)",
+   "expect": "caught"
+  },
+  {
+   "id": "SW4",
+   "group": "phase5",
+   "description": "An undefined metric is treated as 0 and can be selected",
+   "file": "src/sweep.cpp",
+   "old": "    const auto v = metric_value(*r.is, metric);\n    if (!v) continue;                    // an undefined metric is never selected",
+   "new": "    auto v = metric_value(*r.is, metric);\n    if (!v) v = 0.0;",
+   "expect": "caught"
+  },
+  {
+   "id": "SW5",
+   "group": "phase5",
+   "description": "Split boundary: the first out-of-sample day also counts as in-sample",
+   "file": "src/sweep.cpp",
+   "old": "  w.is_last = win[k - 1];",
+   "new": "  w.is_last = win[k];",
+   "expect": "caught"
+  },
+  {
+   "id": "SW6",
+   "group": "phase5",
+   "description": "In-sample data is NOT cut at the split (it can see out-of-sample bars)",
+   "file": "src/sweep.cpp",
+   "old": "is_only = make_aligned(data.series, win->is_last);",
+   "new": "is_only = make_aligned(data.series, cfg.end);",
+   "expect": "caught"
+  },
+  {
+   "id": "SW7",
+   "group": "phase5",
+   "description": "Out-of-sample run starts at the original start, not at the split",
+   "file": "src/sweep.cpp",
+   "old": "    ctx.oos_eval_start = win->oos_first;",
+   "new": "    ctx.oos_eval_start = cfg.start;",
+   "expect": "caught"
+  },
+  {
+   "id": "SW8",
+   "group": "phase5",
+   "description": "Selection uses the OUT-OF-SAMPLE metric when it exists",
+   "file": "src/sweep.cpp",
+   "old": "    const auto v = metric_value(*r.is, metric);\n    if (!v) continue;                    // an undefined metric is never selected",
+   "new": "    const auto v = metric_value(r.oos ? *r.oos : *r.is, metric);\n    if (!v) continue;",
+   "expect": "caught"
+  },
+  {
+   "id": "SW9",
+   "group": "phase5",
+   "description": "Grid order: the FIRST axis varies fastest",
+   "file": "src/sweep.cpp",
+   "old": "    for (std::size_t k = axes.size(); k-- > 0;) {   // last axis varies fastest",
+   "new": "    for (std::size_t k = 0; k < axes.size(); ++k) {   // last axis varies fastest",
+   "expect": "caught"
+  },
+  {
+   "id": "SW10",
+   "group": "phase5",
+   "description": "Float range values not rounded (0.1 steps drift)",
+   "file": "src/sweep.cpp",
+   "old": "else ax.values.push_back(std::round((start + static_cast<double>(i) * step) * 1e10) / 1e10);",
+   "new": "else ax.values.push_back(start + static_cast<double>(i) * step);",
+   "expect": "caught"
+  },
+  {
+   "id": "SW11",
+   "group": "phase5",
+   "description": "Integer ranges become floats",
+   "file": "src/sweep.cpp",
+   "old": "      if (ints) ax.values.push_back(",
+   "new": "      if (ints && false) ax.values.push_back(",
+   "expect": "caught"
+  },
+  {
+   "id": "SW12",
+   "group": "phase5",
+   "description": "Results stored by completion position instead of grid index",
+   "file": "src/sweep.cpp",
+   "old": "compute_row(ctx, out.rows[todo[k]]);",
+   "new": "compute_row(ctx, out.rows[k]);",
+   "expect": "caught"
+  },
+  {
+   "id": "SW13",
+   "group": "phase5",
+   "description": "The 'every grid point invalid' check removed",
+   "file": "src/sweep.cpp",
+   "old": "  if (todo.empty()) throw ConfigError(",
+   "new": "  if (false) throw ConfigError(",
+   "expect": "caught"
+  },
+  {
+   "id": "SW14",
+   "group": "phase5",
+   "description": "Overfit warning fires AT the threshold",
+   "file": "src/sweep.cpp",
+   "old": "} else if (*oos.sharpe < ratio * *is.sharpe) {",
+   "new": "} else if (*oos.sharpe <= ratio * *is.sharpe) {",
+   "expect": "caught"
+  },
+  {
+   "id": "SW15",
+   "group": "phase5",
+   "description": "Overfit warning needs in-sample Sharpe strictly above the floor",
+   "file": "src/sweep.cpp",
+   "old": "if (is.sharpe && *is.sharpe >= min_is_sharpe) {",
+   "new": "if (is.sharpe && *is.sharpe > min_is_sharpe) {",
+   "expect": "caught"
+  },
+  {
+   "id": "SW16",
+   "group": "phase5",
+   "description": "Tiny-window warning off by one",
+   "file": "src/sweep.cpp",
+   "old": "  if (oos_days < 60)\n",
+   "new": "  if (oos_days <= 60)\n",
+   "expect": "caught"
+  },
+  {
+   "id": "DS1",
+   "group": "phase5",
+   "description": "Default price basis is RAW (in the dataset options)",
+   "file": "include/bt/dataset.hpp",
+   "old": "  PriceBasis basis = PriceBasis::Adjusted;",
+   "new": "  PriceBasis basis = PriceBasis::Raw;",
+   "expect": "caught"
+  },
+  {
+   "id": "DS2",
+   "group": "phase5",
+   "description": "Default price basis is RAW (the parser's default string for data.prices)",
+   "file": "src/run_config.cpp",
+   "old": "cfg::get_str(*dit, \"prices\", \"adjusted\", \"data\")",
+   "new": "cfg::get_str(*dit, \"prices\", \"raw\", \"data\")",
+   "expect": "caught"
+  },
+  {
+   "id": "DS3",
+   "group": "phase5",
+   "description": "Default benchmark is ^NSEI instead of NIFTYBEES.NS",
+   "file": "include/bt/run_config.hpp",
+   "old": "  Symbol symbol = \"NIFTYBEES.NS\";",
+   "new": "  Symbol symbol = \"^NSEI\";",
+   "expect": "caught"
+  },
+  {
+   "id": "DS4",
+   "group": "phase5",
+   "description": "An exclusion date that is not in the file is silently ignored",
+   "file": "src/dataset.cpp",
+   "old": "      if (it == bars.end())\n        throw DatasetError(f.path + \": exclude_dates contains \" + format_date(d) + \", which is not a bar in this file (typo?)\");",
+   "new": "      if (it == bars.end()) continue;",
+   "expect": "caught"
+  },
+  {
+   "id": "DS5",
+   "group": "phase5",
+   "description": "Implausible-move guard disabled",
+   "file": "src/dataset.cpp",
+   "old": "      if (std::fabs(move) > f.max_daily_move)",
+   "new": "      if (false && std::fabs(move) > f.max_daily_move)",
+   "expect": "caught"
+  },
+  {
+   "id": "CF1",
+   "group": "phase5",
+   "description": "allocation in strategy.params is allowed",
+   "file": "src/run_config.cpp",
+   "old": "  if (c.params.contains(\"allocation\"))\n    throw ConfigError(",
+   "new": "  if (false)\n    throw ConfigError(",
+   "expect": "caught"
+  }
+ ]
+}

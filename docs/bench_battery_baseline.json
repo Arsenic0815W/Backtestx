@@ -1,0 +1,5 @@
+{
+  "_note": "Median-of-runs figures of the FIRST benchmark run (laptop on battery, 44%, High performance plan, 2026-10-28 18:11), transcribed from the BENCHMARKS.md that run generated; its raw JSON was overwritten by the AC re-run. Same CPU, compiler, flags, thread orders.",
+  "single_bars_per_sec": { "1 symbol x 20 years": 13808219, "50 symbols x 10 years": 20672683 },
+  "sweep_runs_per_sec": { "1": 3869, "2": 7198, "4": 12495, "8": 15762 }
+}

@@ -1,0 +1,4 @@
+{
+  "_note": "Corrupted Yahoo closes found by inspection (neighbouring bars are on a different price level). NOT exhaustive: the move guard cannot see small bad ticks. Used by tools/realdata_check.ps1 (as data.exclude_dates) and by tools/analysis/*.py. Evidence: python tools/analysis/niftybees_vs_index.py",
+  "NIFTYBEES.NS": ["2010-02-05", "2010-10-06", "2019-12-19", "2019-12-20"]
+}

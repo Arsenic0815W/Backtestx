@@ -1,0 +1,15 @@
+{
+  "name": "sma_sweep_synth_a",
+  "data": { "dir": "../data/sample", "files": ["SYNTH_A"] },
+  "period": { "start": "2022-09-01", "end": "2023-11-30" },
+  "capital": 1000000,
+  "sizing": { "allocation": 0.95 },
+  "strategy": { "name": "sma_crossover", "params": { "fast": 10, "slow": 30 } },
+  "benchmark": "SYNTH_B",
+  "sweep": {
+    "grid": { "fast": [5, 10, 20, 35], "slow": { "start": 30, "stop": 60, "step": 10 } },
+    "metric": "sharpe",
+    "min_trades": 3,
+    "walk_forward": { "in_sample_fraction": 0.6 }
+  }
+}

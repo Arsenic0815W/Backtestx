@@ -1,0 +1,11 @@
+{
+  "name": "momentum_synth",
+  "data": { "dir": "../data/sample", "files": ["SYNTH_A", "SYNTH_B", "SYNTH_C"] },
+  "period": { "start": "2022-10-03", "end": "2023-11-30" },
+  "capital": 1000000,
+  "costs_file": "costs_nse_delivery_flat20.json",
+  "slippage": { "mode": "fixed_bps", "value": 5 },
+  "sizing": { "allocation": 0.95 },
+  "strategy": { "name": "momentum_rotation", "params": { "lookback": 60, "top_k": 2 } },
+  "benchmark": null
+}

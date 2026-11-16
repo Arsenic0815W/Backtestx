@@ -1,0 +1,33 @@
+# Build output and run results
+build/
+results/
+*.exe
+*.o
+*.a
+__pycache__/
+*.pyc
+
+# Real market data (downloaded with tools/fetch_data.py; Yahoo's terms restrict redistribution).
+# Only the synthetic sample files (data/sample/) and data/README.md are tracked.
+data/*.csv
+
+# Reports built from that real data
+examples/real_reliance_sweep/
+
+# Documentation images are tracked (screenshots of the README case study)
+!docs/*.png
+
+# Scratch
+build_out.txt
+node_modules
+.env
+venv
+.venv
+__pycache__
+
+# macOS
+.DS_Store
+INTERVIEW_QUESTIONS.md
+LEARNING.md
+RESUME.md
+TODO.md

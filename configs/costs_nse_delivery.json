@@ -1,0 +1,22 @@
+{
+  "meta": {
+    "as_of": "2026-10-28",
+    "status": "PARTIALLY VERIFIED. Rates change; re-check every line before relying on it. DEFAULT config: brokerage Rs 0 (see notes).",
+    "sources": [
+      "exchange_txn_pct 0.00307 = Rs 306.99 transaction charge + Rs 0.01 IPFT contribution per crore, each side, effective 2026-03-01. PRIMARY: NSE circular NSE/FA/73061 dated 2026-02-27 (https://nsearchives.nseindia.com/content/circulars/FA73061.pdf), fetched 2026-10-28, table text decoded from the PDF.",
+      "stt_buy_pct / stt_sell_pct 0.1 = delivery equity, purchaser and seller, 'No Change' from 2026-04-01. PRIMARY: NSE circular NSE/FATAX/73524 dated 2026-03-31 (https://nsearchives.nseindia.com/content/circulars/FATAX73524.pdf), fetched 2026-10-28.",
+      "sebi_pct 0.0001 = 0.00010 per cent of turnover (Rs 10 per crore), cash segment. PRIMARY: SEBI Gazette notification dated 2019-03-22 as hosted in NSE circular NSE/FA/40632 (https://nsearchives.nseindia.com/content/circulars/FA40632.pdf). NOT checked whether a later notification changed it.",
+      "stamp_buy_pct 0.015 = uniform stamp duty on delivery equity, buyer only, from 2020-07-01. SECONDARY ONLY (Zerodha and Upstox announcements); the Indian Stamp Act / Finance Act 2019 notification was not retrieved.",
+      "gst_pct 18 = GST on (brokerage + exchange charges + SEBI fee). UNVERIFIED in this session (not fetched).",
+      "brokerage: default Rs 0 per fill, chosen by the project owner because many discount brokers charge nothing on equity delivery. This is an ASSUMPTION about the broker, not a verified rate; brokerage is broker-specific (full-service brokers charge a percentage). For a more conservative flat charge use configs/costs_nse_delivery_flat20.json (Rs 20 per executed fill)."
+    ],
+    "notes": "THIS FILE IS THE DEFAULT (equals CostConfig::nse_delivery_defaults()). Not modelled: DP (depository) charges on sells, delivery-shorting costs, annual/AMC fees, exchange-specific category differences, taxes on gains (STCG/LTCG)."
+  },
+  "brokerage": { "type": "flat", "flat_rupees": 0.0 },
+  "stt_buy_pct": 0.1,
+  "stt_sell_pct": 0.1,
+  "exchange_txn_pct": 0.00307,
+  "sebi_pct": 0.0001,
+  "stamp_buy_pct": 0.015,
+  "gst_pct": 18.0
+}

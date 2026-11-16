@@ -1,0 +1,9 @@
+{
+  "name": "sma_synth_a",
+  "data": { "dir": "../data/sample", "files": ["SYNTH_A"] },
+  "period": { "start": "2022-09-01", "end": "2023-11-30" },
+  "capital": 1000000,
+  "sizing": { "allocation": 0.95 },
+  "strategy": { "name": "sma_crossover", "params": { "fast": 10, "slow": 30 } },
+  "benchmark": "SYNTH_B"
+}
